@@ -1,0 +1,126 @@
+# FKBC Fight Arcade
+
+Production game project for FKBC.
+
+## Game concept
+
+An original retro martial-arts game inspired by the gameplay principles of classic
+16-bit arcade fighters and scrolling beat-'em-ups.
+
+The game has two primary modes.
+
+### Arcade Fight
+
+Traditional 1-v-1 fighting.
+
+- Joe
+- Jack
+- John
+- Justin
+- Paul
+
+Features:
+
+- Best-of-three rounds
+- 99-second timer
+- Six-button combat
+- Standing, crouching and jumping attacks
+- High and low blocking
+- Throws
+- Knockdowns and recovery
+- Combos
+- Special moves
+- Super meter
+- Projectiles
+- CPU opponents
+- Character-select screen
+- VS screen
+- Arcade progression
+- Training mode
+
+### FKBC Streets
+
+Side-scrolling beat-'em-up mode.
+
+The player moves through scrolling environments fighting groups of opponents.
+
+Features:
+
+- Horizontal and vertical movement
+- Walking depth within the stage
+- Punch and kick combinations
+- Running attacks
+- Jump attacks
+- Throws
+- Knockdowns
+- Pickups
+- Breakable scenery
+- Multiple enemies simultaneously
+- Enemy waves
+- Mini-bosses
+- Coach boss battles
+- Stage transitions
+- Health pickups
+- Score and combo system
+- Continue system
+
+The same core fighters and animation library should be reusable between both modes,
+with additional animations where the beat-'em-up mode requires them.
+
+## Characters
+
+Production characters:
+
+1. Joe
+2. Jack
+3. John
+4. Justin
+5. Paul
+
+Paul is the final arcade boss.
+
+## Technical direction
+
+- Phaser
+- TypeScript
+- 60 FPS
+- Fixed logical game resolution
+- Responsive scaling without geometry drift
+- Landscape-first gameplay
+- Touch virtual controller
+- Keyboard support
+- Physical game-controller support
+- Capacitor for native iOS packaging
+- GitHub source control
+- Cloud iOS build pipeline
+- TestFlight distribution
+
+## Visual direction
+
+Original FKBC artwork inspired by late 1980s / early 1990s console and arcade games.
+
+Do not use copyrighted Street Fighter, Mortal Kombat or Streets of Rage characters,
+sprites, logos, music, stages or other proprietary assets.
+
+Target presentation:
+
+- SNES / Mega Drive-era arcade aesthetic
+- Large readable fighters
+- Detailed frame animation
+- Strong impact animation
+- Character-specific celebrations
+- Arcade character-select presentation
+- Retro console menus
+- High-quality modern rendering of classic game design
+
+## Development rule
+
+Gameplay quality comes before quantity.
+
+First production milestone:
+
+Joe vs training opponent with complete movement, animation, collision, combat,
+sound and controller systems.
+
+Only expand to the other characters and FKBC Streets mode after the fundamental
+combat system feels correct.
