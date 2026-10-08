@@ -1,0 +1,152 @@
+# FKBC Fight Arcade — first playable
+
+Fresh Phaser 3 + TypeScript + Vite implementation. No previous PWA, service worker,
+legacy code, downloaded fighter art, or external runtime asset dependency.
+All fighters and stages are temporary procedural debug graphics.
+
+## Run
+
+Node 24+, npm.
+
+```sh
+npm install
+npm run dev
+# http://localhost:5173
+npm test
+npm run test:browser  # starts/reuses Vite; needs Chromium
+npm run build
+npm run preview
+```
+
+Browser tests use system `/usr/bin/chromium` when present, otherwise Playwright's
+bundled Chromium (`npx playwright install chromium`). Set `CHROMIUM_PATH` to use a
+specific binary. Most tests use the Canvas renderer on GPU-less runners, with a
+separate test of the default WebGL path. Production output is `dist/`. The app targets a fixed 1280×720
+landscape canvas, FIT scaling with letterboxing and no cropping, and a fixed
+60 Hz combat simulation. Rendering targets 60 FPS; actual FPS depends on hardware.
+A capped accumulator prevents runaway simulation after suspension. Pause/visibility
+handling prevents input from sticking after switching apps.
+
+## Playable modes
+
+- **Arcade Fight:** Joe versus a training dummy with basic sparring AI, best of
+  three rounds, 99-second active-play timer, health bars, KO, round scoring,
+  match result, and rematch. This is the first matchup, not an arcade campaign.
+- **Training:** Joe versus dummy; unlimited time; idle, stand guard, crouch guard,
+  and spar dummy settings; health reset after a recovered combo; automatic reset
+  after a KO; frame phase, move timing, hitboxes/hurtboxes, damage, and combo display.
+- **FKBC Streets:** 3200-unit scrolling test street, horizontal and up/down depth
+  movement, six normal attacks, a single placeholder enemy that approaches and
+  attacks, depth-based collision (38-unit tolerance), health/KO, and reset.
+  No enemy waves, pickups, boss, progression, jump, or specials in this basic scene.
+
+Joe is the only playable character. Jack, John, Justin, and Paul are planned roster
+entries, clearly marked unavailable in the menu. No final fighter art is included.
+
+## Controls
+
+| Action                                | Keyboard           | Standard browser gamepad    | Touch               |
+| ------------------------------------- | ------------------ | --------------------------- | ------------------- |
+| Left / right                          | A / D or arrows    | Left stick / D-pad          | Sliding D-pad       |
+| Jump (fight) / depth up (Streets)     | W or ↑             | Stick/D-pad up              | D-pad up            |
+| Crouch (fight) / depth down (Streets) | S or ↓             | Stick/D-pad down            | D-pad down          |
+| LP / MP / HP                          | J / K / L          | A / B / RB                  | Upper three buttons |
+| LK / MK / HK                          | U / I / O          | X / Y / LB                  | Lower three buttons |
+| Guard                                 | Shift or hold away | Either trigger or hold away | GUARD or hold away  |
+| Reset                                 | R                  | —                           | RESET               |
+| Pause                                 | Escape             | —                           | PAUSE / RESUME      |
+| Toggle debug boxes                    | F2                 | —                           | BOXES checkbox      |
+
+The touch D-pad supports sliding diagonals and multiple simultaneous pointers.
+Standard gamepad button indices are 0/1/5 for punches and 2/3/4 for kicks; triggers
+6/7 guard; D-pad 12–15. Gamepads must be connected and activated with a button
+press for browser discovery. Nonstandard mappings may require future remapping.
+Stand guard blocks mids and overheads. Crouch guard blocks mids and lows but loses
+to overheads. You cannot block while attacking, airborne, stunned, or knocked down.
+
+## Joe's specials
+
+Directions are relative to Joe's current facing. Enter within 22 simulation frames
+(~367 ms), then an attack button. A 7-frame attack buffer tolerates inputs just
+before recovery ends and during hit-stop.
+
+| Move                 | Motion            | Behavior                                          |
+| -------------------- | ----------------- | ------------------------------------------------- |
+| Quarter-circle blast | ↓ ↘ → + any punch | Traveling projectile; special chip on block       |
+| Tornado kick         | ↓ ↙ ← + any kick  | Advancing three-hit spin; last hit knocks down    |
+| Rising attack        | → ↓ ↘ + any punch | Rising strike; initial invulnerability; knockdown |
+
+Motions mirror when facing left. Rising attack takes priority over quarter-circle
+if both motions match. Standing, crouching, and airborne normals have appropriate
+heights/guard levels; crouching HK is a knockdown sweep and standing/jumping HK
+is an overhead. Joe faces automatically when grounded and actionable; attack
+facing is locked until the move ends. Jump over the dummy to swap sides.
+
+### Timing and combos
+
+Move definitions live in `src/combat/moves.ts`. Startup/active/recovery and stun
+use simulation frames, independent of draw rate. Light attacks cancel on contact
+into medium/heavy attacks; medium cancels into heavy; normals cancel into specials.
+You can also link attacks during remaining hit stun. A new hit only increments
+the combo if the opponent is still in hit stun/knockdown; recovered targets start
+new combos. Knockdown is 48 frames followed by a 24-frame protected get-up.
+
+| Move       | Startup |         Active | Recovery |     Damage |
+| ---------- | ------: | -------------: | -------: | ---------: |
+| LP         |       4 |              3 |        9 |         35 |
+| MP         |       7 |              4 |       13 |         65 |
+| HP         |      11 |              5 |       20 |        100 |
+| LK         |       5 |              4 |       10 |         40 |
+| MK         |       9 |              5 |       16 |         75 |
+| HK         |      14 |              5 |       23 |        115 |
+| Projectile |      13 |      1 (spawn) |       26 |         85 |
+| Tornado    |      10 | 25 (3 windows) |       20 | 40 per hit |
+| Rising     |       5 |             12 |       28 |        130 |
+
+Hit-stop freezes combat for 6/9 frames on normal/heavy hits, 4 on blocks, while
+still buffering inputs. Impact shake honors reduced-motion preferences. Temporary
+synthesized hit/block sounds unlock on user interaction and can be muted.
+
+## Architecture
+
+```text
+src/
+  scenes/    Menu, shared fixed-step play loop, Fight, Streets
+  fighters/  Renderer-independent fighter state, movement, guard, recovery
+  combat/    Move data, contact resolution, projectiles, stun, hit-stop, combos
+  input/     Keyboard/touch/gamepad snapshots and facing-relative motion buffer
+  ui/        DOM controller/menu, Phaser HUD and temporary fighter drawing
+  audio/     Gesture-unlocked synthesized debug effects
+  assets/    Boundary for future original assets
+```
+
+Simulation code has no Phaser or DOM imports and is covered by deterministic
+combat tests. Chromium integration tests exercise actual mode buttons, keyboard,
+multitouch pointer events, synthetic Gamepad API input, scene transitions, and
+landscape/portrait FIT geometry. Development inspection is stripped from the
+production bundle. Physical gamepad hardware and native-device performance still
+need device testing.
+
+## Capacitor readiness
+
+`@capacitor/core` and CLI are installed. `capacitor.config.ts` declares
+`com.fkbc.fightarcade`, `dist/` output, and the native background/inset configuration.
+Browser and native wrappers use the same frontend bundle, with no PWA dependency.
+Native platform projects are intentionally not generated in this slice.
+
+On a machine with the required SDKs:
+
+```sh
+npm install @capacitor/ios@7 @capacitor/android@7
+npx cap add ios
+npx cap add android
+npm run build
+npm run cap:sync
+```
+
+Set supported orientations to landscape left/right in the generated iOS target
+and `android:screenOrientation="sensorLandscape"` on Android's activity. Configure
+signing and safe-area/device testing before release. Native packaging, App Store
+submission, and production game content are later milestones.
+
+The original project brief is preserved in `README`.
