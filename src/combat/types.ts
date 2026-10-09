@@ -51,6 +51,9 @@ export interface DirectionInput {
   up: boolean;
   down: boolean;
 }
+export type MotionEvent =
+  | { type: "direction"; direction: DirectionInput }
+  | { type: "button"; button: Button };
 export interface InputFrame {
   left: boolean;
   right: boolean;
@@ -60,6 +63,7 @@ export interface InputFrame {
   pressed: Set<Button>;
   jumpPressed: boolean;
   directionChanges?: DirectionInput[];
+  motionEvents?: MotionEvent[];
 }
 export function emptyInput(): InputFrame {
   return {

@@ -389,3 +389,72 @@ test("six-button guard pressure and simultaneous jump attack use the refined com
   await page.keyboard.up("ArrowUp");
   await expect.poll(async () => (await state(page)).joe!.y).toBe(512);
 });
+
+test("same-frame keyboard ordering cannot turn a prior punch into a later motion", async ({
+  page,
+}) => {
+  await ready(page);
+  const inject = async (
+    sequence: { type: "keydown" | "keyup"; code: string }[],
+  ) =>
+    page.evaluate((events) => {
+      for (const event of events)
+        window.dispatchEvent(
+          new KeyboardEvent(event.type, { code: event.code, bubbles: true }),
+        );
+    }, sequence);
+  await inject([
+    { type: "keydown", code: "KeyJ" },
+    { type: "keyup", code: "KeyJ" },
+    { type: "keydown", code: "ArrowDown" },
+    { type: "keydown", code: "ArrowRight" },
+    { type: "keyup", code: "ArrowDown" },
+    { type: "keyup", code: "ArrowRight" },
+  ]);
+  await expect
+    .poll(async () => (await state(page)).joe!.move, {
+      intervals: [20, 50, 100],
+    })
+    .toBe("LP");
+  await page.locator("#reset").click();
+  await inject([
+    { type: "keydown", code: "ArrowDown" },
+    { type: "keydown", code: "ArrowRight" },
+    { type: "keyup", code: "ArrowDown" },
+    { type: "keydown", code: "KeyJ" },
+    { type: "keyup", code: "KeyJ" },
+    { type: "keyup", code: "ArrowRight" },
+  ]);
+  await expect
+    .poll(async () => (await state(page)).joe!.move, {
+      intervals: [20, 50, 100],
+    })
+    .toBe("projectile");
+});
+
+test("a quick keyboard jump and punch remain buffered throughout heavy hit-stop", async ({
+  page,
+}) => {
+  await ready(page);
+  await page.evaluate(() => {
+    const s = (window as any).__FKBC__.scene.getScene("Fight");
+    s.world.hitstop = 9;
+    for (const code of ["ArrowUp", "KeyJ"])
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { code, bubbles: true }),
+      );
+    for (const code of ["ArrowUp", "KeyJ"])
+      window.dispatchEvent(new KeyboardEvent("keyup", { code, bubbles: true }));
+  });
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() => {
+          const f = (window as any).__FKBC__.scene.getScene("Fight").joe;
+          return f.attackStance === "air" && f.move?.id === "LP" && !f.grounded;
+        }),
+      { intervals: [20, 50, 100] },
+    )
+    .toBe(true);
+  await expect.poll(async () => (await state(page)).joe!.y).toBe(512);
+});

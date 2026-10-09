@@ -304,3 +304,97 @@ test("contact allows rapid light chains but late recovery and whiffs cannot canc
   joe.tick({ ...emptyInput(), pressed: new Set(["MP"]) }, 475);
   assert.equal(moveId(joe), "LP");
 });
+
+test("button and direction order within one render frame is preserved", () => {
+  const b = new MotionBuffer();
+  const down = { left: false, right: false, up: false, down: true };
+  const diagonal = { ...down, right: true };
+  const forward = { ...diagonal, down: false };
+  b.record(
+    {
+      ...emptyInput(),
+      right: true,
+      pressed: new Set(["LP"]),
+      motionEvents: [
+        { type: "button", button: "LP" },
+        { type: "direction", direction: down },
+        { type: "direction", direction: diagonal },
+        { type: "direction", direction: forward },
+      ],
+    },
+    1,
+  );
+  assert.equal(b.peek(), "LP");
+  b.record(
+    {
+      ...emptyInput(),
+      right: true,
+      pressed: new Set(["MP"]),
+      motionEvents: [{ type: "button", button: "MP" }],
+    },
+    1,
+  );
+  assert.equal(b.peek(), "projectile");
+  b.clear();
+  b.record(
+    {
+      ...emptyInput(),
+      right: true,
+      pressed: new Set(["HP"]),
+      motionEvents: [
+        { type: "direction", direction: down },
+        { type: "direction", direction: diagonal },
+        { type: "direction", direction: forward },
+        { type: "button", button: "HP" },
+      ],
+    },
+    1,
+  );
+  assert.equal(b.peek(), "projectile");
+});
+test("jump tap and aerial attack survive hit-stop without holding up or repeating", () => {
+  const { joe, world } = setup();
+  world.hitstop = 9;
+  world.tick([
+    { ...emptyInput(), jumpPressed: true, pressed: new Set(["LP"]) },
+    emptyInput(),
+  ]);
+  for (let i = 0; i < 9; i++) world.tick([emptyInput(), emptyInput()]);
+  assert.equal(joe.attackStance, "air");
+  assert.equal(moveId(joe), "LP");
+  assert.ok(!joe.grounded);
+  assert.equal(joe.buffer.peekJump(), false);
+  for (let i = 0; i < 60; i++) world.tick([emptyInput(), emptyInput()]);
+  assert.equal(joe.grounded, true);
+});
+test("combo resets when the defender becomes actionable on the contact tick", () => {
+  const { joe, dummy, world } = setup();
+  joe.combo = 3;
+  joe.comboDamage = 120;
+  joe.comboTTL = 100;
+  dummy.state = "hitstun";
+  dummy.stateFrames = 1;
+  joe.startMove(getMove("LP", "stand"));
+  joe.moveFrame = 3;
+  world.tick([emptyInput(), emptyInput()]);
+  assert.equal(joe.combo, 1);
+  assert.equal(joe.comboDamage, 35);
+});
+test("an old projectile cannot confirm a newer whiffed normal", () => {
+  const { joe, dummy, world } = setup();
+  dummy.x = 800;
+  const projectile = getMove("projectile", "stand");
+  world.projectiles.push({
+    x: dummy.x - 20,
+    y: dummy.y - 86,
+    owner: joe,
+    move: projectile,
+    facing: 1,
+    life: 20,
+  });
+  joe.startMove(getMove("LP", "stand"));
+  world.tick([emptyInput(), emptyInput()]);
+  assert.equal(dummy.health, 915);
+  assert.equal(joe.confirmed, false);
+  assert.equal(moveId(joe), "LP");
+});

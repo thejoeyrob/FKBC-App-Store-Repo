@@ -201,7 +201,8 @@ export class Fighter {
       }
     }
     if (!this.move) {
-      if (i.jumpPressed && this.grounded && !i.down) {
+      if (this.buffer.peekJump() && this.grounded && !i.down) {
+        this.buffer.consumeJump();
         this.vy = -14.5;
         this.y -= 1;
         this.vx = (Number(i.right) - Number(i.left)) * 4.5;

@@ -170,3 +170,20 @@ game's frame data.
 Standard gamepads now match the SNES button positions: left/top/left shoulder for
 punches, bottom/right/right shoulder for kicks (Xbox X/Y/LB and A/B/RB). Backward
 walking is 75% of forward speed while holding away remains directional guard.
+
+## Artwork preparation
+
+See [the artist brief](docs/ART_BRIEF.md) for the Joe pilot, complete animation
+inventory, dummy reactions, effects, stage layers, UI, naming, and PNG handoff.
+Use [ASSET_CHECKLIST.csv](docs/ASSET_CHECKLIST.csv) to track the batches. Technical
+SVG guides in `docs/templates/` illustrate alignment and screen reservations;
+they are not final game art.
+
+### Input and recovery follow-up
+
+Buttons and directions now retain their exact order within a browser render frame,
+so a direction entered after a punch cannot retroactively turn that punch into a
+special. Jump taps share the seven-frame input buffer and stay alive through
+hit-stop. Combo accounting checks stun at the moment of contact; a recovered
+opponent starts a fresh combo. A previously launched projectile cannot grant a
+newer whiffed normal a contact cancel.

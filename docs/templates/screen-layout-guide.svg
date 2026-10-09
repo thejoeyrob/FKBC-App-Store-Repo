@@ -1,0 +1,46 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1280"
+  height="720"
+  viewBox="0 0 1280 720"
+>
+  <title>FKBC 1280 by 720 stage layout guide</title>
+  <desc>
+    Top 170 pixels are HUD and toolbar. Fight floor is y512. Streets depth band
+    is y365 to500. Lower 520 to720 is touch controller area. Guides are not
+    final artwork.
+  </desc>
+  <rect width="1280" height="720" fill="#0b1424" />
+  <rect width="1280" height="170" fill="#596ca1" fill-opacity=".35" />
+  <rect
+    x="75"
+    y="300"
+    width="1130"
+    height="212"
+    fill="#65d4ed"
+    fill-opacity=".06"
+    stroke="#65d4ed"
+  />
+  <rect
+    x="75"
+    y="365"
+    width="1130"
+    height="135"
+    fill="#c5fb76"
+    fill-opacity=".07"
+    stroke="#c5fb76"
+    stroke-dasharray="10 8"
+  />
+  <rect y="520" width="1280" height="200" fill="#596ca1" fill-opacity=".35" />
+  <path d="M0 512H1280" stroke="#ffda75" stroke-width="3" />
+  <g font-family="monospace" font-size="20" fill="#edf3ff">
+    <text x="34" y="55">HUD / TOOLBAR · Y 0–170</text>
+    <text x="34" y="220">STAGE GUIDE ONLY · 1280 × 720</text>
+    <text x="100" y="334" fill="#65d4ed">KEEP FIGHT SILHOUETTES CLEAR</text>
+    <text x="100" y="396" fill="#c5fb76">STREETS DEPTH: Y 365–500</text>
+    <text x="720" y="492" fill="#ffda75">FIGHT FLOOR: Y 512</text>
+    <text x="34" y="565">TOUCH CONTROLLER BAND · Y 520–720</text>
+    <text x="34" y="598">KEEP QUIET; DO NOT BAKE BUTTONS INTO STAGE ART</text>
+    <text x="34" y="682">Layer exports should retain common registration.</text>
+  </g>
+</svg>

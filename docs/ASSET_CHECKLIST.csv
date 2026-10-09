@@ -1,0 +1,93 @@
+priority,owner,asset_or_clip,suggested_count,width_px,height_px,status,notes
+P0,joe,model_sheet,1,,,not_started,Define appearance outfit palette and fighting stance
+P0,joe,idle,6,384,256,not_started,Pilot; root 192 224; right-facing
+P0,joe,stand_lp,5,384,256,not_started,Pilot; anticipation contact recovery
+P0,dummy,concept,1,,,not_started,Humanoid sparring dummy
+P0,training_stage,concept,1,1280,720,not_started,Floor y512; controller band y520-720
+P1,joe,walk_forward,8,384,256,not_started,Root 192 224; right-facing
+P1,joe,walk_back,8,384,256,not_started,Root 192 224; right-facing
+P1,joe,crouch_enter,3,384,256,not_started,Root 192 224; right-facing
+P1,joe,crouch_idle,2,384,256,not_started,Root 192 224; right-facing
+P1,joe,crouch_exit,3,384,256,not_started,Root 192 224; right-facing
+P1,joe,jump_start,3,384,256,not_started,Root 192 224; right-facing
+P1,joe,jump_rise,2,384,256,not_started,Root 192 224; right-facing
+P1,joe,jump_apex,2,384,256,not_started,Root 192 224; right-facing
+P1,joe,jump_fall,2,384,256,not_started,Root 192 224; right-facing
+P1,joe,landing,3,384,256,not_started,Root 192 224; right-facing
+P1,joe,block_high,2,384,256,not_started,Root 192 224; right-facing
+P1,joe,block_low,2,384,256,not_started,Root 192 224; right-facing
+P1,joe,hit_stand,3,384,256,not_started,Root 192 224; right-facing
+P1,joe,hit_crouch,3,384,256,not_started,Root 192 224; right-facing
+P1,joe,hit_air,2,384,256,not_started,Root 192 224; right-facing
+P1,joe,knockdown,6,384,256,not_started,Root 192 224; right-facing
+P1,joe,down,1,384,256,not_started,Root 192 224; right-facing
+P1,joe,getup,6,384,256,not_started,Root 192 224; right-facing
+P1,joe,ko,1,384,256,not_started,Root 192 224; KO may reuse down
+P1,joe,victory,6,384,256,not_started,Root 192 224; right-facing
+P1,joe,stand_mp,6,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,stand_hp,8,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,stand_lk,5,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,stand_mk,6,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,stand_hk,8,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,crouch_lp,5,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,crouch_mp,6,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,crouch_hp,8,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,crouch_lk,5,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,crouch_mk,6,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,crouch_hk,8,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,air_lp,5,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,air_mp,6,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,air_hp,8,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,air_lk,5,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,air_mk,6,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,air_hk,8,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
+P1,joe,special_projectile,8,384,256,not_started,VFX supplied separately
+P1,joe,special_tornado,12,384,256,not_started,VFX supplied separately
+P1,joe,special_rising,10,384,256,not_started,VFX supplied separately
+P1,dummy,idle,2,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,block_high,2,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,block_low,2,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,hit_stand,3,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,hit_crouch,3,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,knockdown,6,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,down,1,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,getup,6,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,ko,1,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,walk_forward,6,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,walk_back,6,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,stand_lp,5,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,stand_mp,6,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,stand_mk,6,384,256,not_started,First nine clips are passive training; others support sparring
+P1,dummy,crouch_hk,8,384,256,not_started,First nine clips are passive training; others support sparring
+P2,fx,projectile_spawn,4,64,64,not_started,Transparent; separate from fighter
+P2,fx,projectile_loop,6,64,64,not_started,Transparent; separate from fighter
+P2,fx,projectile_impact,6,96,96,not_started,Transparent; separate from fighter
+P2,fx,hit_light,4,64,64,not_started,Transparent; separate from fighter
+P2,fx,hit_heavy,6,96,96,not_started,Transparent; separate from fighter
+P2,fx,block_spark,4,64,64,not_started,Transparent; separate from fighter
+P2,fx,tornado_trail,8,192,128,not_started,Transparent; separate from fighter
+P2,fx,rising_trail,6,128,192,not_started,Transparent; separate from fighter
+P2,fx,dust_land,4,128,64,not_started,Transparent; separate from fighter
+P2,fx,shadow,1,96,24,not_started,Transparent; separate from fighter
+P2,training_stage,far,1,1280,720,not_started,Common registration; foreground optional
+P2,training_stage,mid,1,1280,720,not_started,Common registration; foreground optional
+P2,training_stage,floor,1,1280,720,not_started,Common registration; foreground optional
+P2,training_stage,foreground_optional,1,1280,720,not_started,Common registration; foreground optional
+P2,streets_stage,far,5,640,720,not_started,Five adjoining sections; 3200x720 layered source; foreground optional
+P2,streets_stage,mid,5,640,720,not_started,Five adjoining sections; 3200x720 layered source; foreground optional
+P2,streets_stage,floor,5,640,720,not_started,Five adjoining sections; 3200x720 layered source; foreground optional
+P2,streets_stage,foreground_optional,5,640,720,not_started,Five adjoining sections; 3200x720 layered source; foreground optional
+P2,ui,logo,1,512,256,not_started,UI skin later; app icon after visual direction established
+P2,ui,joe_portrait,1,128,128,not_started,UI skin later; app icon after visual direction established
+P2,ui,dummy_portrait,1,128,128,not_started,UI skin later; app icon after visual direction established
+P2,ui,menu_background,1,1280,720,not_started,UI skin later; app icon after visual direction established
+P2,ui,health_bar_frame,2,480,24,not_started,UI skin later; app icon after visual direction established
+P2,ui,round_marker,2,24,24,not_started,UI skin later; app icon after visual direction established
+P2,ui,dpad_skin,2,192,192,not_started,UI skin later; app icon after visual direction established
+P2,ui,attack_buttons,12,64,64,not_started,UI skin later; app icon after visual direction established
+P2,ui,utility_icons,3,64,64,not_started,UI skin later; app icon after visual direction established
+P2,ui,app_icon,1,1024,1024,not_started,UI skin later; app icon after visual direction established
+P3,jack,model_sheet,1,,,not_started,Future roster; no animations yet
+P3,john,model_sheet,1,,,not_started,Future roster; no animations yet
+P3,justin,model_sheet,1,,,not_started,Future roster; no animations yet
+P3,paul,model_sheet,1,,,not_started,Future roster; no animations yet

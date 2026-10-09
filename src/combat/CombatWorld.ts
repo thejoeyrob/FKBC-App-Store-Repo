@@ -52,9 +52,6 @@ export class CombatWorld {
       return;
     }
     const [a, b] = this.fighters;
-    const chainable = this.fighters.map(
-      (f) => f.state === "hitstun" || f.state === "knockdown",
-    );
     a.tick(inputs[0], b.x, allowSpecials);
     b.tick(inputs[1], a.x, allowSpecials);
     this.resolveBodies(depthLimit);
@@ -94,13 +91,7 @@ export class CombatWorld {
     }
     for (const c of contacts) {
       c.attacker.hitWindows.add(c.window);
-      this.hit(
-        c.attacker,
-        c.target,
-        c.move,
-        c.window,
-        chainable[this.fighters.indexOf(c.target)],
-      );
+      this.hit(c.attacker, c.target, c.move, c.window);
     }
     this.projectiles = this.projectiles.filter((p) => {
       p.x += p.facing * 9;
@@ -111,13 +102,7 @@ export class CombatWorld {
         Math.abs(p.owner.depth - target.depth) <= depthLimit &&
         overlaps(this.projectileBox(p), target.hurtbox())
       ) {
-        this.hit(
-          p.owner,
-          target,
-          p.move,
-          0,
-          chainable[this.fighters.indexOf(target)],
-        );
+        this.hit(p.owner, target, p.move, 0);
         return false;
       }
       return p.life > 0 && p.x > -50 && p.x < Math.max(a.maxX, b.maxX) + 100;
@@ -155,13 +140,17 @@ export class CombatWorld {
     target: Fighter,
     move: Move,
     window: number,
-    chainable: boolean,
   ): void {
     const blocked = target.canBlock(move, attacker.x),
       direction: Facing = target.x >= attacker.x ? 1 : -1;
+    // Count chains only while the defender is still stunned *at contact*, not
+    // at the start of a tick that may finish their recovery.
+    const chainable =
+      target.state === "hitstun" || target.state === "knockdown";
     const lastHit = !move.windows || window === move.windows.length - 1;
     const damage = target.receive(move, blocked, direction, lastHit);
-    attacker.confirmed = true;
+    // A delayed projectile must not give a newer whiffed normal a cancel.
+    if (attacker.move === move) attacker.confirmed = true;
     if (blocked) {
       attacker.vx -= direction * 1.5;
     } else {

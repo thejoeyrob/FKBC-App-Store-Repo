@@ -4,6 +4,7 @@ import {
   type Button,
   type InputFrame,
   type DirectionInput,
+  type MotionEvent,
 } from "../combat/types";
 const keymap: Record<string, Action> = {
   ArrowLeft: "left",
@@ -31,6 +32,7 @@ export class InputManager {
   private previous = new Set<Action>();
   private directionChanges: DirectionInput[] = [];
   private previousDirection = 0;
+  private motionEvents: MotionEvent[] = [];
   private gamepad = new Set<Action>();
   private gamepadLabel = "No gamepad";
   private enabled = false;
@@ -91,6 +93,7 @@ export class InputManager {
     this.pending.clear();
     this.jumpPending = false;
     this.directionChanges = [];
+    this.motionEvents = [];
     this.previousDirection = 0;
   }
   private held(): Set<Action> {
@@ -115,11 +118,15 @@ export class InputManager {
       Number(direction.down) * 8;
     if (bits !== this.previousDirection) {
       this.directionChanges.push(direction);
+      this.motionEvents.push({ type: "direction", direction });
       this.previousDirection = bits;
     }
     for (const a of held)
       if (!this.previous.has(a)) {
-        if (BUTTONS.includes(a as Button)) this.pending.add(a as Button);
+        if (BUTTONS.includes(a as Button)) {
+          this.pending.add(a as Button);
+          this.motionEvents.push({ type: "button", button: a as Button });
+        }
         if (a === "up") this.jumpPending = true;
       }
     this.previous = held;
@@ -164,10 +171,12 @@ export class InputManager {
       pressed: new Set(this.pending),
       jumpPressed: this.jumpPending,
       directionChanges: this.directionChanges,
+      motionEvents: this.motionEvents,
     };
     this.pending.clear();
     this.jumpPending = false;
     this.directionChanges = [];
+    this.motionEvents = [];
     return result;
   }
   destroy(): void {
