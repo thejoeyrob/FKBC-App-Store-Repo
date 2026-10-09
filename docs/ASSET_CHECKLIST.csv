@@ -43,6 +43,7 @@ P1,joe,air_mk,6,384,256,not_started,Separate anticipation contact recovery; air 
 P1,joe,air_hk,8,384,256,not_started,Separate anticipation contact recovery; air attacks are overhead
 P1,joe,special_projectile,8,384,256,not_started,VFX supplied separately
 P1,joe,special_tornado,12,384,256,not_started,VFX supplied separately
+P1,joe,special_sidekick,8,384,256,not_started,Chamber extension and recoil; no projectile
 P1,joe,special_rising,10,384,256,not_started,VFX supplied separately
 P1,dummy,idle,2,384,256,not_started,First nine clips are passive training; others support sparring
 P1,dummy,block_high,2,384,256,not_started,First nine clips are passive training; others support sparring

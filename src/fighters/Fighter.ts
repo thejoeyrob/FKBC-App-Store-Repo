@@ -1,3 +1,4 @@
+import { specialMovesFor } from "./roster";
 import { FLOOR, MAX_HEALTH } from "../config";
 import { MotionBuffer } from "../input/MotionBuffer";
 import { activeWindow, duration, getMove, canCancel } from "../combat/moves";
@@ -138,7 +139,8 @@ export class Fighter {
   }
   startMove(move: Move): void {
     const stance = this.stance;
-    this.attackStance = stance;
+    this.attackStance =
+      move.cancelRank === 4 && this.grounded ? "stand" : stance;
     if (stance === "air") this.airAttackUsed = true;
     this.move = move;
     this.moveFrame = 0;
@@ -177,7 +179,10 @@ export class Fighter {
     }
     if (this.move) {
       this.moveFrame++;
-      const requested = this.buffer.peek(allowSpecials);
+      const requested = this.buffer.peek(
+        allowSpecials,
+        specialMovesFor(this.id),
+      );
       if (
         this.confirmed &&
         requested &&
@@ -198,6 +203,12 @@ export class Fighter {
         this.state = this.grounded ? "idle" : "air";
       } else if (this.move?.id === "tornado") {
         this.x += this.facing * 3.8;
+      } else if (
+        this.move?.id === "sidekick" &&
+        this.moveFrame >= this.move.startup &&
+        this.moveFrame < this.move.startup + this.move.active
+      ) {
+        this.x += this.facing * 5;
       }
     }
     if (!this.move) {
@@ -208,15 +219,20 @@ export class Fighter {
         this.vx = (Number(i.right) - Number(i.left)) * 4.5;
         this.state = "air";
       }
-      const requested = this.buffer.peek(allowSpecials);
+      const requested = this.buffer.peek(
+        allowSpecials,
+        specialMovesFor(this.id),
+      );
       if (
         requested &&
         (this.grounded || !this.airAttackUsed) &&
         (allowSpecials ||
-          !["projectile", "tornado", "rising"].includes(requested)) &&
+          !["projectile", "tornado", "rising", "sidekick"].includes(
+            requested,
+          )) &&
         !(
           this.stance === "air" &&
-          ["projectile", "tornado", "rising"].includes(requested)
+          ["projectile", "tornado", "rising", "sidekick"].includes(requested)
         )
       ) {
         this.startMove(getMove(requested, this.stance));

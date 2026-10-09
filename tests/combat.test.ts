@@ -64,6 +64,7 @@ test("phone specials need only cardinal taps, tolerate slides, and reject stale 
       [[{ down: true }, { [forward]: true }], "LP", "projectile"],
       [[{ down: true }, { [back]: true }], "HP", "rising"],
       [[{ [back]: true }, { [forward]: true }], "HK", "tornado"],
+      [[{ down: true }, { [forward]: true }], "MK", "sidekick"],
       [
         [{ down: true }, { down: true, [back]: true }, { [back]: true }],
         "MP",
@@ -421,4 +422,70 @@ test("an old projectile cannot confirm a newer whiffed normal", () => {
   assert.equal(dummy.health, 915);
   assert.equal(joe.confirmed, false);
   assert.equal(moveId(joe), "LP");
+});
+
+test("rising input launches melee only, never a fireball, for both facings and every punch", () => {
+  for (const facing of [1, -1] as Facing[]) {
+    for (const button of ["LP", "MP", "HP"] as const) {
+      const joe = new Fighter("joe", "Joe", 640, facing, 0);
+      const dummy = new Fighter(
+        "dummy",
+        "Dummy",
+        facing === 1 ? 1100 : 150,
+        -facing as Facing,
+        0,
+      );
+      const world = new CombatWorld([joe, dummy]);
+      const back = facing === 1 ? "left" : "right";
+      world.tick([{ ...emptyInput(), down: true }, emptyInput()]);
+      world.tick([
+        { ...emptyInput(), [back]: true, pressed: new Set([button]) },
+        emptyInput(),
+      ]);
+      assert.equal(joe.move?.id, "rising");
+      assert.equal(joe.move?.projectile, undefined);
+      for (let i = 0; i < 20; i++) world.tick([emptyInput(), emptyInput()]);
+      assert.equal(world.projectiles.length, 0);
+      assert.ok(joe.y < joe.floor);
+    }
+  }
+});
+
+test("Joe side kick advances grounded, hits once and knocks down; dummy cannot use his signature", () => {
+  const { joe, dummy, world } = setup();
+  dummy.x = 590;
+  world.tick([{ ...emptyInput(), down: true }, emptyInput()]);
+  world.tick([
+    { ...emptyInput(), right: true, pressed: new Set(["MK"]) },
+    emptyInput(),
+  ]);
+  assert.equal(joe.move?.id, "sidekick");
+  for (let i = 0; i < 40; i++) world.tick([emptyInput(), emptyInput()]);
+  assert.ok(joe.x > 400);
+  assert.equal(joe.y, joe.floor);
+  assert.equal(dummy.health, 880);
+  assert.equal(dummy.state, "knockdown");
+  assert.equal(world.projectiles.length, 0);
+  dummy.reset(800, -1);
+  dummy.tick({ ...emptyInput(), down: true }, 400);
+  dummy.tick({ ...emptyInput(), left: true, pressed: new Set(["MK"]) }, 400);
+  assert.equal(dummy.move?.id, "MK");
+});
+
+test("side kick chips on guard and normal contact cancels into it", () => {
+  const { joe, dummy, world } = setup();
+  joe.startMove(getMove("sidekick", "stand"));
+  const guard = { ...emptyInput(), guard: true };
+  for (let i = 0; i < 22; i++) world.tick([emptyInput(), guard]);
+  assert.equal(dummy.health, 988);
+  assert.notEqual(dummy.state, "knockdown");
+  joe.reset(400, 1);
+  dummy.reset(475, -1);
+  world.reset();
+  joe.startMove(getMove("LP", "stand"));
+  joe.moveFrame = 4;
+  joe.confirmed = true;
+  joe.tick({ ...emptyInput(), down: true }, dummy.x);
+  joe.tick({ ...emptyInput(), right: true, pressed: new Set(["HK"]) }, dummy.x);
+  assert.equal(joe.move?.id, "sidekick");
 });

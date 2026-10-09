@@ -44,10 +44,12 @@ export class FighterView {
       g.lineBetween(f.x, y + 33, f.x, f.y - 35);
       const extend =
         f.move && phase(f.move, f.moveFrame) === "ACTIVE"
-          ? Math.min(f.move.reach, 95)
+          ? Math.min(f.move.reach, f.move.id === "sidekick" ? 158 : 95)
           : 31;
       const kick =
-        !!f.move && (f.move.id.endsWith("K") || f.move.id === "tornado");
+        !!f.move &&
+        (f.move.id.endsWith("K") ||
+          ["tornado", "sidekick"].includes(f.move.id));
       g.lineBetween(f.x, y + 47, f.x + f.facing * (kick ? 25 : extend), y + 55);
       g.lineBetween(f.x, y + 47, f.x - f.facing * 22, y + 65);
       g.lineBetween(f.x, f.y - 35, f.x - f.facing * 18, f.y);
@@ -55,10 +57,15 @@ export class FighterView {
         f.x,
         f.y - 35,
         f.x + f.facing * (kick ? extend : 18),
-        kick ? f.y - 45 : f.y,
+        kick ? f.y - (f.move?.id === "sidekick" ? 80 : 45) : f.y,
       );
       g.fillStyle(0x080d18);
       g.fillRect(f.x + f.facing * 6 - 2, y + 14, 4, 4);
+    }
+    if (f.move?.id === "rising") {
+      // An upward striking arm makes this visibly different from a projectile.
+      g.lineStyle(7, 0xffdd77);
+      g.lineBetween(f.x, y + 47, f.x + f.facing * 35, y - 20);
     }
     if (f.move?.id === "tornado") {
       g.lineStyle(3, 0xc5fb76, 0.7);
@@ -84,7 +91,7 @@ export class FighterView {
       .setPosition(f.x, f.y - h - 22)
       .setText(
         debug
-          ? `${f.name.toUpperCase()} · ${f.state.toUpperCase()}${f.move ? `\n${phase(f.move, f.moveFrame)} ${f.moveFrame}` : ""}`
+          ? `${f.name.toUpperCase()} · ${f.state.toUpperCase()}${f.move ? `\n${f.move.name.toUpperCase()} · ${phase(f.move, f.moveFrame)} ${f.moveFrame}` : ""}`
           : f.name.toUpperCase(),
       );
   }

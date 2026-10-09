@@ -2,7 +2,7 @@ export type Facing = 1 | -1;
 export type Button = "LP" | "MP" | "HP" | "LK" | "MK" | "HK";
 export const BUTTONS: Button[] = ["LP", "MP", "HP", "LK", "MK", "HK"];
 export type Action = Button | "left" | "right" | "up" | "down" | "guard";
-export type MoveId = Button | "projectile" | "tornado" | "rising";
+export type MoveId = Button | "projectile" | "tornado" | "rising" | "sidekick";
 export type Stance = "stand" | "crouch" | "air";
 export type FighterState =
   | "idle"

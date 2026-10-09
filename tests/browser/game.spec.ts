@@ -467,6 +467,7 @@ test("touch specials use separate cardinal taps without diagonals", async ({
     ["down", "right", "LP", "projectile"],
     ["down", "left", "HP", "rising"],
     ["left", "right", "HK", "tornado"],
+    ["down", "right", "MK", "sidekick"],
   ]) {
     await page.locator("#reset").click();
     await page.evaluate(() => {
@@ -495,5 +496,8 @@ test("touch specials use separate cardinal taps without diagonals", async ({
     await expect
       .poll(() => page.evaluate(() => (window as any).__touchMoves))
       .toContain(move);
+    if (move === "rising" || move === "sidekick") {
+      expect((await state(page)).projectiles).toBe(0);
+    }
   }
 });

@@ -80,16 +80,18 @@ export class MotionBuffer {
     }
     return false;
   }
-  peek(allowSpecials = true): MoveId | null {
+  peek(allowSpecials = true, allowed?: readonly MoveId[]): MoveId | null {
     const entry = this.buttons.at(-1);
     if (!entry) return null;
-    if (!allowSpecials) return entry.button;
+    if (!allowSpecials || (allowed && !allowed.includes(entry.move)))
+      return entry.button;
     return entry.move;
   }
   private resolve(button: Button): MoveId {
     const punch = button.endsWith("P");
     if (punch && this.matches([2, 4])) return "rising";
     if (punch && this.matches([2, 6])) return "projectile";
+    if (!punch && this.matches([2, 6])) return "sidekick";
     if (!punch && this.matches([4, 6])) return "tornado";
     return button;
   }

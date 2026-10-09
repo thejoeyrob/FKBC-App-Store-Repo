@@ -66,6 +66,8 @@ to overheads. You cannot block while attacking, airborne, hit-stunned, or knocke
 
 ## Joe's specials
 
+See [the gameplay move list](docs/MOVE_LIST.md) for phone controls and character signatures.
+
 Directions are relative to Joe's current facing. Enter within 30 simulation frames
 (~500 ms), then an attack button. A 7-frame attack buffer tolerates inputs just
 before recovery ends and during hit-stop.
@@ -74,6 +76,7 @@ before recovery ends and during hit-stop.
 | -------------------- | ----------------- | ------------------------------------------------- |
 | Projectile blast     | ↓ → + any punch | Traveling projectile; special chip on block       |
 | Tornado kick         | ← → + any kick  | Advancing three-hit spin; last hit knocks down    |
+| Thrusting side kick  | ↓ → + any kick  | Joe’s signature advancing kick; pushback and knockdown |
 | Rising attack        | ↓ ← + any punch | Rising strike; initial invulnerability; knockdown |
 
 Motions are quick sequential taps, not simultaneous holds; no diagonal or charge
@@ -188,3 +191,16 @@ special. Jump taps share the seven-frame input buffer and stay alive through
 hit-stop. Combo accounting checks stun at the moment of contact; a recovered
 opponent starts a fresh combo. A previously launched projectile cannot grant a
 newer whiffed normal a contact cancel.
+
+
+### Character signatures
+
+Joe's thrusting side kick is playable with down → forward + any kick. It stays
+grounded, advances during its active frames, and has long reach and knockdown.
+Rising remains down → back + punch: an upward melee strike with no projectile.
+The fighter debug label displays the move name to make input testing clear.
+
+Per-character special loadouts live in `src/fighters/roster.ts`. Only Joe is
+playable. Proposed future signatures (not implemented): Jack — rush punch;
+John — spinning backfist; Justin — counter strike; Paul — power slam.
+These are editable design proposals for roster expansion.

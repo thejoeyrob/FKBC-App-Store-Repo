@@ -62,7 +62,7 @@ keep the same virtual root—vertical travel is supplied by the game. Knockdown
 and lying poses keep the root reference even when no foot is touching it.
 
 Give limbs sufficient transparent margin; the current longest normal hitbox
-extends 160 pixels forward from the root. Tornado trails and large effects belong
+extends 170 pixels forward from the root (including Joe’s side kick). Tornado trails and large effects belong
 on separate VFX layers. Do not bake floor shadows, motion trails, hit sparks,
 health bars, text, or hitboxes into the fighter image. No opaque/checkerboard
 background, watermark, or per-frame automatic recentering/cropping.
@@ -108,9 +108,10 @@ will hold/reuse poses and map anticipation/contact/recovery to move timing.
 | `air_lk`, `air_mk`, `air_hk`          |       5 / 6 / 8 | Airborne kicks; all jumping normals count as overheads    |
 | `special_projectile`                  |               8 | Windup, release, recovery; projectile exported separately |
 | `special_tornado`                     |              12 | Three readable kick/contact sections and recovery         |
+| `special_sidekick`                    |               8 | Chamber, extended horizontal heel strike, recoil/recovery |
 | `special_rising`                      |              10 | Takeoff/strike, rise, descent/recovery                    |
 
-The full recommendation is **218 drawn poses across 42 clips** (KO can reuse down).
+The full recommendation is **226 drawn poses across 43 clips** (KO can reuse down).
 That is a planning estimate; don't commission all of it before the pilot works.
 Optional intro, taunts, throws, super moves, and fighter-specific cutscenes are
 **later scope** and are not required for this slice.
