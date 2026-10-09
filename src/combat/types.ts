@@ -9,6 +9,7 @@ export type FighterState =
   | "walk"
   | "crouch"
   | "air"
+  | "landing"
   | "attack"
   | "hitstun"
   | "blockstun"

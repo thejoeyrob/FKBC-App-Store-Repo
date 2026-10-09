@@ -141,12 +141,12 @@ export class InputManager {
       if (y < -0.35 || pressed(12)) this.gamepad.add("up");
       if (y > 0.35 || pressed(13)) this.gamepad.add("down");
       const bindings: [number, Button][] = [
-        [0, "LP"],
-        [1, "MP"],
-        [5, "HP"],
-        [2, "LK"],
-        [3, "MK"],
-        [4, "HK"],
+        [2, "LP"],
+        [3, "MP"],
+        [4, "HP"],
+        [0, "LK"],
+        [1, "MK"],
+        [5, "HK"],
       ];
       for (const [i, b] of bindings) if (pressed(i)) this.gamepad.add(b);
       if (pressed(6) || pressed(7)) this.gamepad.add("guard");

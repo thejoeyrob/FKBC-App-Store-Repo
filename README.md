@@ -58,11 +58,11 @@ entries, clearly marked unavailable in the menu. No final fighter art is include
 | Toggle debug boxes                    | F2                 | —                           | BOXES checkbox      |
 
 The touch D-pad supports sliding diagonals and multiple simultaneous pointers.
-Standard gamepad button indices are 0/1/5 for punches and 2/3/4 for kicks; triggers
+Standard gamepad button indices are 2/3/4 for punches and 0/1/5 for kicks; triggers
 6/7 guard; D-pad 12–15. Gamepads must be connected and activated with a button
 press for browser discovery. Nonstandard mappings may require future remapping.
 Stand guard blocks mids and overheads. Crouch guard blocks mids and lows but loses
-to overheads. You cannot block while attacking, airborne, stunned, or knocked down.
+to overheads. You cannot block while attacking, airborne, hit-stunned, or knocked down.
 
 ## Joe's specials
 
@@ -78,16 +78,21 @@ before recovery ends and during hit-stop.
 
 Motions mirror when facing left. Rising attack takes priority over quarter-circle
 if both motions match. Standing, crouching, and airborne normals have appropriate
-heights/guard levels; crouching HK is a knockdown sweep and standing/jumping HK
-is an overhead. Joe faces automatically when grounded and actionable; attack
+heights/guard levels; crouching HK is a knockdown sweep and jumping normals
+are overheads. Standing normals can be crouch-blocked. Joe faces automatically when grounded and actionable; attack
 facing is locked until the move ends. Jump over the dummy to swap sides.
 
 ### Timing and combos
 
 Move definitions live in `src/combat/moves.ts`. Startup/active/recovery and stun
 use simulation frames, independent of draw rate. Light attacks cancel on contact
-into medium/heavy attacks; medium cancels into heavy; normals cancel into specials.
-You can also link attacks during remaining hit stun. A new hit only increments
+into medium/heavy attacks; medium cancels into heavy; normals cancel into specials. Contact cancels must be
+entered during the active frames or the next three frames; whiffs retain full recovery.
+Light attacks can chain into another light attack on contact.
+You can also link attacks during remaining hit stun. One normal attack is allowed per
+jump; airborne normals gain five active frames and four hit-stun frames for jump-in
+links. Landing ends an airborne attack with four frames of recovery. Holding guard
+continues blocking through a block string, provided the high/low direction is correct. A new hit only increments
 the combo if the opponent is still in hit stun/knockdown; recovered targets start
 new combos. Knockdown is 48 frames followed by a 24-frame protected get-up.
 
@@ -150,3 +155,18 @@ signing and safe-area/device testing before release. Native packaging, App Store
 submission, and production game content are later milestones.
 
 The original project brief is preserved in `README`.
+
+## Combat-feel pass (six-button controls)
+
+The SNES fighting-game control reference is six attacks: LP/MP/HP and LK/MK/HK.
+This pass keeps FKBC's original moves and refines guard strings, rapid light chains,
+contact cancel windows, jump-in attack reach, and landing recovery. Up plus attack
+in the same input sample starts a jump attack. Attack stance stays fixed, so holding
+down midway through a standing attack does not shrink its hurtbox. A buffered move
+is resolved when its button is pressed; later directions cannot reinterpret it.
+The combat is inspired by that control style, not an exact reproduction of another
+game's frame data.
+
+Standard gamepads now match the SNES button positions: left/top/left shoulder for
+punches, bottom/right/right shoulder for kicks (Xbox X/Y/LB and A/B/RB). Backward
+walking is 75% of forward speed while holding away remains directional guard.

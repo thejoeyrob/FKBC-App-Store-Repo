@@ -87,7 +87,7 @@ const normals: Record<Button, Move> = {
     push: 40,
     reach: 148,
     height: 44,
-    level: "overhead",
+    level: "mid",
     cancelRank: 3,
   },
 };
@@ -158,6 +158,9 @@ export function getMove(id: MoveId, stance: Stance): Move {
       ...base,
       name: `Jump ${base.name.toLowerCase()}`,
       level: "overhead",
+      startup: Math.max(3, base.startup - 2),
+      active: base.active + 5,
+      hitstun: base.hitstun + 4,
     };
   return {
     ...base,
@@ -179,4 +182,12 @@ export function phase(move: Move, frame: number): string {
   if (frame < move.startup) return "STARTUP";
   if (frame < move.startup + move.active) return "ACTIVE";
   return "RECOVERY";
+}
+
+// Contact cancels end shortly after active frames; whiffs always retain recovery.
+export function canCancel(current: Move, next: Move, frame: number): boolean {
+  const inWindow =
+    frame >= current.startup && frame < current.startup + current.active + 3;
+  const lightChain = current.cancelRank === 1 && next.cancelRank === 1;
+  return inWindow && (lightChain || next.cancelRank > current.cancelRank);
 }

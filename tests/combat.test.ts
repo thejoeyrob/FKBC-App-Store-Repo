@@ -5,6 +5,9 @@ import { CombatWorld } from "../src/combat/CombatWorld";
 import { getMove, activeWindow, duration } from "../src/combat/moves";
 import { emptyInput, type InputFrame, type Facing } from "../src/combat/types";
 import { MotionBuffer } from "../src/input/MotionBuffer";
+function moveId(fighter: Fighter) {
+  return fighter.move?.id;
+}
 function setup() {
   const joe = new Fighter("joe", "Joe", 400, 1, 0);
   const dummy = new Fighter("dummy", "Dummy", 475, -1, 0);
@@ -83,7 +86,8 @@ test("blocking obeys low and overhead rules and applies block stun", () => {
   assert.equal(dummy.canBlock(getMove("LK", "crouch"), 400), false);
   dummy.lastInput.down = true;
   assert.equal(dummy.canBlock(getMove("LK", "crouch"), 400), true);
-  assert.equal(dummy.canBlock(getMove("HK", "stand"), 400), false);
+  assert.equal(dummy.canBlock(getMove("HK", "stand"), 400), true);
+  assert.equal(dummy.canBlock(getMove("HK", "air"), 400), false);
   dummy.lastInput = { ...emptyInput(), right: true };
   assert.equal(dummy.canBlock(getMove("LP", "stand"), 400), true);
   dummy.receive(getMove("LP", "stand"), true, 1, true);
@@ -222,5 +226,81 @@ test("Streets treats motion-plus-attack as a normal when specials are disabled",
     475,
     false,
   );
-  assert.equal(joe.move?.id, "LP");
+  assert.equal(moveId(joe), "LP");
+});
+
+test("holding guard blocks all three tornado contacts during block stun", () => {
+  const { joe, dummy, world } = setup();
+  joe.startMove(getMove("tornado", "stand"));
+  const guard = { ...emptyInput(), guard: true };
+  for (let i = 0; i < 60; i++) world.tick([emptyInput(), guard]);
+  assert.equal(dummy.health, 988);
+  assert.equal(joe.combo, 0);
+});
+test("jump plus attack starts an overhead, has downward reach and cannot repeat before landing", () => {
+  const { joe } = setup();
+  joe.tick(
+    { ...emptyInput(), jumpPressed: true, pressed: new Set(["LP"]) },
+    475,
+  );
+  assert.equal(joe.attackStance, "air");
+  assert.equal(joe.move?.level, "overhead");
+  for (let i = 0; i < 5; i++) joe.tick(emptyInput(), 475);
+  assert.ok(joe.hitbox()!.y > joe.y - 60);
+  for (let i = 0; i < 20; i++) joe.tick(emptyInput(), 475);
+  assert.equal(joe.move, null);
+  assert.equal(joe.grounded, false);
+  joe.tick({ ...emptyInput(), pressed: new Set(["HP"]) }, 475);
+  assert.equal(joe.move, null);
+  for (let i = 0; i < 40; i++) joe.tick(emptyInput(), 475);
+  joe.tick({ ...emptyInput(), pressed: new Set(["HP"]) }, 475);
+  assert.equal(moveId(joe), "HP");
+});
+test("landing ends an active jump attack and accepts a buffered ground follow-up after recovery", () => {
+  const { joe } = setup();
+  joe.y = joe.floor - 2;
+  joe.vy = 3;
+  joe.startMove(getMove("HK", "air"));
+  joe.tick(emptyInput(), 475);
+  assert.equal(joe.state, "landing");
+  assert.equal(joe.move, null);
+  joe.tick({ ...emptyInput(), pressed: new Set(["LP"]) }, 475);
+  for (let i = 0; i < 4; i++) joe.tick(emptyInput(), 475);
+  assert.equal(moveId(joe), "LP");
+  assert.equal(joe.attackStance, "stand");
+});
+test("standing attack posture cannot be changed halfway through by holding down", () => {
+  const { joe } = setup();
+  joe.startMove(getMove("HP", "stand"));
+  joe.tick({ ...emptyInput(), down: true }, 475);
+  assert.equal(joe.hurtbox().height, 132);
+  assert.equal(joe.stance, "stand");
+});
+test("buffered button keeps its command even when a motion is entered afterwards", () => {
+  const b = new MotionBuffer();
+  b.record({ ...emptyInput(), pressed: new Set(["LP"]) }, 1);
+  motion(b, [{ down: true }, { down: true, right: true }, { right: true }]);
+  assert.equal(b.peek(), "LP");
+  b.record({ ...emptyInput(), right: true, pressed: new Set(["MP"]) }, 1);
+  assert.equal(b.peek(), "projectile");
+});
+test("contact allows rapid light chains but late recovery and whiffs cannot cancel", () => {
+  const { joe } = setup();
+  joe.startMove(getMove("LP", "stand"));
+  joe.moveFrame = 4;
+  joe.confirmed = true;
+  joe.tick({ ...emptyInput(), pressed: new Set(["LK"]) }, 475);
+  assert.equal(moveId(joe), "LK");
+  joe.startMove(getMove("HP", "stand"));
+  joe.confirmed = true;
+  joe.moveFrame = 21;
+  joe.buffer.record({ ...emptyInput(), down: true }, 1);
+  joe.buffer.record({ ...emptyInput(), down: true, right: true }, 1);
+  joe.tick({ ...emptyInput(), right: true, pressed: new Set(["LP"]) }, 475);
+  assert.equal(moveId(joe), "HP");
+  joe.reset(400, 1);
+  joe.startMove(getMove("LP", "stand"));
+  joe.moveFrame = 4;
+  joe.tick({ ...emptyInput(), pressed: new Set(["MP"]) }, 475);
+  assert.equal(moveId(joe), "LP");
 });

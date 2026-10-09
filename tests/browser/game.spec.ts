@@ -183,11 +183,11 @@ test("touch controller supports simultaneous direction and punch; gamepad mappin
   await page.evaluate(() => ((window as any).__testPad.axes[0] = 0));
   await expect(page.locator("#device")).toContainText("PAD 1");
   await page.evaluate(
-    () => ((window as any).__testPad.buttons[0].pressed = true),
+    () => ((window as any).__testPad.buttons[2].pressed = true),
   );
   await page.waitForTimeout(90);
   await page.evaluate(
-    () => ((window as any).__testPad.buttons[0].pressed = false),
+    () => ((window as any).__testPad.buttons[2].pressed = false),
   );
   await expect
     .poll(async () => (await state(page)).dummy!.health)
@@ -329,4 +329,63 @@ test("default WebGL renderer runs combat and returns safely to mode select", asy
   await page.locator("#home").click();
   await expect(page.locator('[data-mode="training"]')).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+test("six-button guard pressure and simultaneous jump attack use the refined combat rules", async ({
+  page,
+}) => {
+  await ready(page);
+  await page.selectOption("#dummy", "guard");
+  await page.evaluate(() => {
+    const s = (window as any).__FKBC__.scene.getScene("Fight");
+    s.joe.x = 400;
+    s.dummy.x = 475;
+    (window as any).__guardContacts = [];
+    const original = s.world.onImpact;
+    s.world.onImpact = (impact: any) => {
+      (window as any).__guardContacts.push({
+        blocked: impact.blocked,
+        damage: impact.damage,
+      });
+      original?.(impact);
+    };
+  });
+  await page.keyboard.down("ArrowDown");
+  await page.waitForTimeout(50);
+  await page.keyboard.down("ArrowLeft");
+  await page.waitForTimeout(50);
+  await page.keyboard.up("ArrowDown");
+  await page.keyboard.press("u");
+  await page.keyboard.up("ArrowLeft");
+  await expect.poll(async () => (await state(page)).joe!.move).toBe("tornado");
+  await expect
+    .poll(async () =>
+      page.evaluate(() => (window as any).__guardContacts.length),
+    )
+    .toBe(3);
+  expect(await page.evaluate(() => (window as any).__guardContacts)).toEqual([
+    { blocked: true, damage: 4 },
+    { blocked: true, damage: 4 },
+    { blocked: true, damage: 4 },
+  ]);
+  await page.locator("#reset").click();
+  await page.evaluate(() => {
+    // Both keys arrive in one browser task, before the next simulation sample.
+    for (const code of ["ArrowUp", "KeyJ"])
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { code, bubbles: true }),
+      );
+    for (const code of ["ArrowUp", "KeyJ"])
+      window.dispatchEvent(new KeyboardEvent("keyup", { code, bubbles: true }));
+  });
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const s = (window as any).__FKBC__.scene.getScene("Fight");
+        return s.joe.attackStance;
+      }),
+    )
+    .toBe("air");
+  await page.keyboard.up("ArrowUp");
+  await expect.poll(async () => (await state(page)).joe!.y).toBe(512);
 });

@@ -1,6 +1,6 @@
 import { FLOOR, MAX_HEALTH } from "../config";
 import { MotionBuffer } from "../input/MotionBuffer";
-import { activeWindow, duration, getMove } from "../combat/moves";
+import { activeWindow, duration, getMove, canCancel } from "../combat/moves";
 import type {
   Facing,
   FighterState,
@@ -34,6 +34,7 @@ export class Fighter {
   maxX = 1205;
   depth = 0;
   groundMoveSpeed = 4.5;
+  private airAttackUsed = false;
   constructor(
     public id: string,
     public name: string,
@@ -48,12 +49,18 @@ export class Fighter {
     return this.y >= this.floor;
   }
   get stance(): Stance {
+    if (this.move) return this.attackStance;
     return !this.grounded ? "air" : this.lastInput?.down ? "crouch" : "stand";
   }
   get locked(): boolean {
-    return ["hitstun", "blockstun", "knockdown", "getup", "ko"].includes(
-      this.state,
-    );
+    return [
+      "hitstun",
+      "blockstun",
+      "knockdown",
+      "getup",
+      "landing",
+      "ko",
+    ].includes(this.state);
   }
   get invulnerable(): boolean {
     return (
@@ -77,6 +84,7 @@ export class Fighter {
     this.combo = 0;
     this.comboDamage = 0;
     this.comboTTL = 0;
+    this.airAttackUsed = false;
     this.buffer.clear();
     this.lastInput = null;
   }
@@ -85,7 +93,7 @@ export class Fighter {
     const crouch =
       this.state === "crouch" ||
       (this.move && this.attackStance === "crouch") ||
-      (this.lastInput?.down && this.grounded);
+      (!this.move && this.lastInput?.down && this.grounded);
     const h = down ? 28 : crouch ? 78 : 132;
     return { x: this.x - 27, y: this.y - h, width: 54, height: h };
   }
@@ -98,10 +106,12 @@ export class Fighter {
       return null;
     const m = this.move;
     const y =
-      this.attackStance === "crouch"
-        ? this.y - (m.level === "low" ? 35 : 69)
-        : this.y -
-          (m.id === "rising" ? 145 : m.level === "overhead" ? 130 : 100);
+      this.attackStance === "air"
+        ? this.y - 55
+        : this.attackStance === "crouch"
+          ? this.y - (m.level === "low" ? 35 : 69)
+          : this.y -
+            (m.id === "rising" ? 145 : m.level === "overhead" ? 130 : 100);
     return {
       x: this.facing === 1 ? this.x + 12 : this.x - 12 - m.reach,
       y,
@@ -110,7 +120,12 @@ export class Fighter {
     };
   }
   canBlock(move: Move, sourceX: number): boolean {
-    if (!this.grounded || this.locked || this.move || !this.lastInput)
+    if (
+      !this.grounded ||
+      (this.locked && this.state !== "blockstun" && this.state !== "landing") ||
+      this.move ||
+      !this.lastInput
+    )
       return false;
     const i = this.lastInput;
     const away = sourceX >= this.x ? i.left : i.right;
@@ -122,7 +137,9 @@ export class Fighter {
     return true;
   }
   startMove(move: Move): void {
-    this.attackStance = this.stance;
+    const stance = this.stance;
+    this.attackStance = stance;
+    if (stance === "air") this.airAttackUsed = true;
     this.move = move;
     this.moveFrame = 0;
     this.state = "attack";
@@ -136,13 +153,13 @@ export class Fighter {
   }
   tick(i: InputFrame, opponentX: number, allowSpecials = true): void {
     this.lastInput = i;
+    if (this.grounded && !this.move && !this.locked)
+      this.facing = opponentX >= this.x ? 1 : -1;
     this.buffer.record(i, this.facing);
     if (this.comboTTL > 0 && --this.comboTTL === 0) {
       this.combo = 0;
       this.comboDamage = 0;
     }
-    if (this.grounded && !this.move && !this.locked)
-      this.facing = opponentX >= this.x ? 1 : -1;
     if (this.state === "ko") {
       this.physics();
       return;
@@ -169,7 +186,7 @@ export class Fighter {
       ) {
         const next = getMove(requested, this.stance);
         if (
-          next.cancelRank > this.move.cancelRank &&
+          canCancel(this.move, next, this.moveFrame) &&
           (allowSpecials || next.cancelRank < 4)
         ) {
           this.startMove(next);
@@ -184,9 +201,16 @@ export class Fighter {
       }
     }
     if (!this.move) {
+      if (i.jumpPressed && this.grounded && !i.down) {
+        this.vy = -14.5;
+        this.y -= 1;
+        this.vx = (Number(i.right) - Number(i.left)) * 4.5;
+        this.state = "air";
+      }
       const requested = this.buffer.peek(allowSpecials);
       if (
         requested &&
+        (this.grounded || !this.airAttackUsed) &&
         (allowSpecials ||
           !["projectile", "tornado", "rising"].includes(requested)) &&
         !(
@@ -197,16 +221,12 @@ export class Fighter {
         this.startMove(getMove(requested, this.stance));
         this.buffer.consume();
       } else {
-        if (i.jumpPressed && this.grounded) {
-          this.vy = -14.5;
-          this.y -= 1;
-          this.vx = (Number(i.right) - Number(i.left)) * 4.5;
-          this.state = "air";
-        }
         if (this.grounded) {
           const dx = Number(i.right) - Number(i.left);
           this.state = i.down ? "crouch" : dx ? "walk" : "idle";
-          if (!i.down && !i.guard) this.x += dx * this.groundMoveSpeed;
+          if (!i.down && !i.guard)
+            this.x +=
+              dx * this.groundMoveSpeed * (dx === this.facing ? 1 : 0.75);
         } else this.state = "air";
       }
     }
@@ -221,6 +241,15 @@ export class Fighter {
       if (this.y >= this.floor) {
         this.y = this.floor;
         this.vy = 0;
+        this.airAttackUsed = false;
+        if (this.move && this.attackStance === "air") {
+          this.move = null;
+          this.state = "landing";
+          this.stateFrames = 4;
+        }
+        // Landing ends the air command buffer; an unspent aerial input must not
+        // turn into a surprise ground attack.
+        this.buffer.clear();
         this.vx *= 0.5;
       }
     }

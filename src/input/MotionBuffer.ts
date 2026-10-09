@@ -5,7 +5,7 @@ interface Direction {
 }
 export class MotionBuffer {
   private directions: Direction[] = [];
-  private buttons: { button: Button; frame: number }[] = [];
+  private buttons: { button: Button; move: MoveId; frame: number }[] = [];
   private lastDirection = 5;
   frame = 0;
   clear(): void {
@@ -28,7 +28,11 @@ export class MotionBuffer {
     }
     this.directions = this.directions.filter((d) => this.frame - d.frame <= 24);
     for (const button of input.pressed)
-      this.buttons.push({ button, frame: this.frame });
+      this.buttons.push({
+        button,
+        move: this.resolve(button),
+        frame: this.frame,
+      });
     this.buttons = this.buttons.filter((b) => this.frame - b.frame <= 7);
   }
   private matches(sequence: number[]): boolean {
@@ -47,11 +51,14 @@ export class MotionBuffer {
     const entry = this.buttons.at(-1);
     if (!entry) return null;
     if (!allowSpecials) return entry.button;
-    const punch = entry.button.endsWith("P");
+    return entry.move;
+  }
+  private resolve(button: Button): MoveId {
+    const punch = button.endsWith("P");
     if (punch && this.matches([6, 2, 3])) return "rising";
     if (punch && this.matches([2, 3, 6])) return "projectile";
     if (!punch && this.matches([2, 1, 4])) return "tornado";
-    return entry.button;
+    return button;
   }
   consume(): void {
     this.buttons = [];
