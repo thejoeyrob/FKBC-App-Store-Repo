@@ -94,7 +94,7 @@ const normals: Record<Button, Move> = {
 const specials: Record<"projectile" | "tornado" | "rising", Move> = {
   projectile: {
     id: "projectile",
-    name: "Quarter-circle blast",
+    name: "Projectile blast",
     startup: 13,
     active: 1,
     recovery: 26,

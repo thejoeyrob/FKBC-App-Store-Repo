@@ -50,8 +50,8 @@ entries, clearly marked unavailable in the menu. No final fighter art is include
 | Left / right                          | A / D or arrows    | Left stick / D-pad          | Sliding D-pad       |
 | Jump (fight) / depth up (Streets)     | W or ↑             | Stick/D-pad up              | D-pad up            |
 | Crouch (fight) / depth down (Streets) | S or ↓             | Stick/D-pad down            | D-pad down          |
-| LP / MP / HP                          | J / K / L          | A / B / RB                  | Upper three buttons |
-| LK / MK / HK                          | U / I / O          | X / Y / LB                  | Lower three buttons |
+| LP / MP / HP                          | J / K / L          | X / Y / LB                  | Upper three buttons |
+| LK / MK / HK                          | U / I / O          | A / B / RB                  | Lower three buttons |
 | Guard                                 | Shift or hold away | Either trigger or hold away | GUARD or hold away  |
 | Reset                                 | R                  | —                           | RESET               |
 | Pause                                 | Escape             | —                           | PAUSE / RESUME      |
@@ -66,18 +66,19 @@ to overheads. You cannot block while attacking, airborne, hit-stunned, or knocke
 
 ## Joe's specials
 
-Directions are relative to Joe's current facing. Enter within 22 simulation frames
-(~367 ms), then an attack button. A 7-frame attack buffer tolerates inputs just
+Directions are relative to Joe's current facing. Enter within 30 simulation frames
+(~500 ms), then an attack button. A 7-frame attack buffer tolerates inputs just
 before recovery ends and during hit-stop.
 
 | Move                 | Motion            | Behavior                                          |
 | -------------------- | ----------------- | ------------------------------------------------- |
-| Quarter-circle blast | ↓ ↘ → + any punch | Traveling projectile; special chip on block       |
-| Tornado kick         | ↓ ↙ ← + any kick  | Advancing three-hit spin; last hit knocks down    |
-| Rising attack        | → ↓ ↘ + any punch | Rising strike; initial invulnerability; knockdown |
+| Projectile blast     | ↓ → + any punch | Traveling projectile; special chip on block       |
+| Tornado kick         | ← → + any kick  | Advancing three-hit spin; last hit knocks down    |
+| Rising attack        | ↓ ← + any punch | Rising strike; initial invulnerability; knockdown |
 
-Motions mirror when facing left. Rising attack takes priority over quarter-circle
-if both motions match. Standing, crouching, and airborne normals have appropriate
+Motions are quick sequential taps, not simultaneous holds; no diagonal or charge
+is required. Sliding through a lower diagonal is tolerated. Motions mirror when
+facing left. Standing, crouching, and airborne normals have appropriate
 heights/guard levels; crouching HK is a knockdown sweep and jumping normals
 are overheads. Standing normals can be crouch-blocked. Joe faces automatically when grounded and actionable; attack
 facing is locked until the move ends. Jump over the dummy to swap sides.

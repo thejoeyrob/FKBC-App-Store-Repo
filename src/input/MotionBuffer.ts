@@ -23,7 +23,7 @@ export class MotionBuffer {
   }
   record(input: InputFrame, facing: Facing, advance = true): void {
     if (advance) this.frame++;
-    this.directions = this.directions.filter((d) => this.frame - d.frame <= 24);
+    this.directions = this.directions.filter((d) => this.frame - d.frame <= 32);
     if (input.motionEvents !== undefined) {
       // Directions and buttons share one event stream. A direction that arrives
       // after an attack in the same render frame cannot rewrite that attack.
@@ -68,14 +68,15 @@ export class MotionBuffer {
     this.jumpFrame = null;
   }
   private matches(sequence: number[]): boolean {
-    // Match ordered direction changes, allowing neutral but rejecting opposite/up inputs.
+    // Cardinal taps only; tolerate neutral and sliding through lower diagonals.
     let index = sequence.length - 1;
     for (let i = this.directions.length - 1; i >= 0; i--) {
       const d = this.directions[i];
-      if (this.frame - d.frame > 22) break;
+      if (this.frame - d.frame > 30) break;
       if (d.value === sequence[index]) {
         if (--index < 0) return true;
-      } else if (d.value !== 5 && !sequence.includes(d.value)) return false;
+      } else if (![5, 1, 3].includes(d.value) && !sequence.includes(d.value))
+        return false;
     }
     return false;
   }
@@ -87,9 +88,9 @@ export class MotionBuffer {
   }
   private resolve(button: Button): MoveId {
     const punch = button.endsWith("P");
-    if (punch && this.matches([6, 2, 3])) return "rising";
-    if (punch && this.matches([2, 3, 6])) return "projectile";
-    if (!punch && this.matches([2, 1, 4])) return "tornado";
+    if (punch && this.matches([2, 4])) return "rising";
+    if (punch && this.matches([2, 6])) return "projectile";
+    if (!punch && this.matches([4, 6])) return "tornado";
     return button;
   }
   consume(): void {

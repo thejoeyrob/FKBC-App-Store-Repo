@@ -20,7 +20,7 @@ function motion(
 ) {
   for (const s of steps) buffer.record({ ...emptyInput(), ...s }, facing);
 }
-test("quarter circle and rising motions are relative to facing; motion priority and expiry", () => {
+test("simple cardinal specials mirror with facing and buffered attacks expire", () => {
   for (const facing of [1, -1] as Facing[]) {
     const forward = facing === 1 ? "right" : "left",
       back = facing === 1 ? "left" : "right";
@@ -39,22 +39,14 @@ test("quarter circle and rising motions are relative to facing; motion priority 
     assert.equal(b.peek(), null);
     motion(
       b,
-      [
-        { [forward]: true },
-        { down: true },
-        { down: true, [forward]: true, pressed: new Set(["HP"]) },
-      ],
+      [{ down: true }, { [back]: true, pressed: new Set(["HP"]) }],
       facing,
     );
     assert.equal(b.peek(), "rising");
     b.consume();
     motion(
       b,
-      [
-        { down: true },
-        { down: true, [back]: true },
-        { [back]: true, pressed: new Set(["MK"]) },
-      ],
+      [{ [back]: true }, { [forward]: true, pressed: new Set(["MK"]) }],
       facing,
     );
     assert.equal(b.peek(), "tornado");
@@ -63,6 +55,38 @@ test("quarter circle and rising motions are relative to facing; motion priority 
   b.record({ ...emptyInput(), pressed: new Set(["LP"]) }, 1);
   for (let i = 0; i < 8; i++) b.record(emptyInput(), 1);
   assert.equal(b.peek(), null);
+});
+test("phone specials need only cardinal taps, tolerate slides, and reject stale or reversed motions", () => {
+  for (const facing of [1, -1] as Facing[]) {
+    const forward = facing === 1 ? "right" : "left";
+    const back = facing === 1 ? "left" : "right";
+    for (const [steps, button, expected] of [
+      [[{ down: true }, { [forward]: true }], "LP", "projectile"],
+      [[{ down: true }, { [back]: true }], "HP", "rising"],
+      [[{ [back]: true }, { [forward]: true }], "HK", "tornado"],
+      [
+        [{ down: true }, { down: true, [back]: true }, { [back]: true }],
+        "MP",
+        "rising",
+      ],
+    ] as const) {
+      const b = new MotionBuffer();
+      motion(
+        b,
+        [...steps, { ...steps.at(-1), pressed: new Set([button]) }],
+        facing,
+      );
+      assert.equal(b.peek(), expected);
+    }
+  }
+  const stale = new MotionBuffer();
+  motion(stale, [{ down: true }]);
+  for (let i = 0; i < 31; i++) stale.record(emptyInput(), 1);
+  motion(stale, [{ right: true, pressed: new Set(["LP"]) }]);
+  assert.equal(stale.peek(), "LP");
+  const reversed = new MotionBuffer();
+  motion(reversed, [{ right: true }, { left: true, pressed: new Set(["HK"]) }]);
+  assert.equal(reversed.peek(), "HK");
 });
 test("normal does no damage during startup and hits once in active window", () => {
   const { joe, dummy, world } = setup();
